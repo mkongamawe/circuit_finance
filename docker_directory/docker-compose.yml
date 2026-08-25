@@ -1,0 +1,21 @@
+services:
+  circuit-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.r-shiny
+    container_name: circuit-dashboard
+    restart: unless-stopped
+    ports:
+      - "3838:3838"
+    volumes:
+      - ./app:/srv/shiny-server/circuit-dashboard
+      - ./logs:/var/log/shiny-server
+    env_file:
+      - .env
+    environment:
+      CIRCUIT_DB_HOST: host.docker.internal   # or your server's LAN/Tailscale IP
+      CIRCUIT_DB_PORT: "5432"
+      CIRCUIT_DB_NAME: circuit_finance_dev
+      CIRCUIT_DB_USER: shiny_reader
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # needed on Linux; harmless elsewhere

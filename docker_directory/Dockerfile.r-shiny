@@ -1,0 +1,38 @@
+FROM rocker/shiny:4.4.1
+
+
+# Get the required libpq5 library
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+    # install2.r is littler's installer, bundled in rocker images.
+# --skipinstalled avoids reinstalling base packages already present;
+# --ncpus -1 uses all available cores to compile faster.
+RUN install2.r --error --skipinstalled --ncpus -1 \
+      shinydashboard \
+      fresh \
+      DBI \
+      RPostgres \
+      dplyr \
+      DT \
+      plotly \
+      lubridate \
+      scales \
+    && rm -rf /tmp/downloaded_packages
+
+
+COPY scripts/bash/write-renviron.sh /usr/local/bin/write-renviron.sh
+RUN chmod +x /usr/local/bin/write-renviron.sh
+
+COPY scripts/bash/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+# Shiny Server serves any folder under /srv/shiny-server/ as an app
+# at http://<host>:3838/<folder-name>/
+COPY app/app.R /srv/shiny-server/circuit-dashboard/app.R
+ 
+EXPOSE 3838
+ 
+# This is already the default CMD in rocker/shiny, but explicit is nice:
+CMD ["/usr/bin/shiny-server"]
