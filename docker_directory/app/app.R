@@ -65,7 +65,7 @@ load_data <- function() {
   )
   on.exit(dbDisconnect(con))
 
-  ledger <- dbGetQuery(con, "SELECT * FROM general_ledger") %>%
+  ledger <- dbGetQuery(con, "SELECT * FROM general_ledger") |>
     mutate(
       entry_date = as.Date(entry_date),
       flow = ifelse(signed_amount >= 0, "income", "expense")
@@ -87,7 +87,7 @@ load_data <- function() {
     JOIN funds f       ON f.id = t.fund_id
     WHERE NOT t.is_voided
   "
-  ) %>%
+  ) |>
     mutate(transaction_date = as.Date(transaction_date))
 
   list(ledger = ledger, balances = balances, funds = funds)
@@ -139,17 +139,17 @@ ui <- dashboardPage(
           valueBoxOutput("net_balance")
         ),
         fluidRow(
-          box(
-            title = "Monthly Income vs Expenses",
-            width = 8,
-            status = "primary",
-            plotlyOutput("monthly_chart")
-          ),
-          box(
-            title = "Expenses by Category",
-            width = 4,
-            status = "primary",
-            plotlyOutput("category_chart")
+          tabBox(
+            width = 12,
+            height = "480px",
+            tabPanel(
+              "Monthly Income Vs Expense",
+              plotlyOutput("monthly_chart", height = "600px")
+            ),
+            tabPanel(
+              "Expenses by Category",
+              plotlyOutput("category_chart", height = "600px")
+            )
           )
         )
       ),
@@ -206,13 +206,13 @@ server <- function(input, output, session) {
   observeEvent(input$refresh, raw(load_data()))
 
   ledger_in_range <- reactive({
-    df <- raw()$ledger %>%
+    df <- raw()$ledger |>
       filter(
         entry_date >= input$date_range[1],
         entry_date <= input$date_range[2]
       )
     if (!isTRUE(input$show_voided)) {
-      df <- df %>% filter(!is_voided)
+      df <- df |> filter(!is_voided)
     }
     df
   })
@@ -226,7 +226,7 @@ server <- function(input, output, session) {
         dollar(row$current_balance, prefix = "KES "),
         subtitle = row$account_name,
         icon = icon(
-          if (grepl("mpesa|mobile", row$account_name, ignore.case = TRUE)) {
+          if (grepl("M-Pesa|Petty", row$account_name, ignore.case = TRUE)) {
             "mobile-screen"
           } else {
             "building-columns"
@@ -241,9 +241,9 @@ server <- function(input, output, session) {
 
   ## ---- Value boxes (income/expense/net, transactions only) ----
   output$total_income <- renderValueBox({
-    v <- ledger_in_range() %>%
-      filter(entry_type == "transaction", flow == "income") %>%
-      pull(signed_amount) %>%
+    v <- ledger_in_range() |>
+      filter(entry_type == "transaction", flow == "income") |>
+      pull(signed_amount) |>
       sum(na.rm = TRUE)
     valueBox(
       dollar(v, prefix = "KES "),
@@ -254,10 +254,10 @@ server <- function(input, output, session) {
   })
 
   output$total_expense <- renderValueBox({
-    v <- ledger_in_range() %>%
-      filter(entry_type == "transaction", flow == "expense") %>%
-      pull(signed_amount) %>%
-      sum(na.rm = TRUE) %>%
+    v <- ledger_in_range() |>
+      filter(entry_type == "transaction", flow == "expense") |>
+      pull(signed_amount) |>
+      sum(na.rm = TRUE) |>
       abs()
     valueBox(
       dollar(v, prefix = "KES "),
@@ -268,9 +268,9 @@ server <- function(input, output, session) {
   })
 
   output$net_balance <- renderValueBox({
-    v <- ledger_in_range() %>%
-      filter(entry_type == "transaction") %>%
-      pull(signed_amount) %>%
+    v <- ledger_in_range() |>
+      filter(entry_type == "transaction") |>
+      pull(signed_amount) |>
       sum(na.rm = TRUE)
     valueBox(
       dollar(v, prefix = "KES "),
@@ -282,10 +282,10 @@ server <- function(input, output, session) {
 
   ## ---- Monthly income vs expense ----
   output$monthly_chart <- renderPlotly({
-    monthly <- ledger_in_range() %>%
-      filter(entry_type == "transaction") %>%
-      mutate(month = floor_date(entry_date, "month")) %>%
-      group_by(month, flow) %>%
+    monthly <- ledger_in_range() |>
+      filter(entry_type == "transaction") |>
+      mutate(month = floor_date(entry_date, "month")) |>
+      group_by(month, flow) |>
       summarise(total = sum(abs(signed_amount)), .groups = "drop")
 
     p <- ggplot2::ggplot(
@@ -307,10 +307,10 @@ server <- function(input, output, session) {
 
   ## ---- Category breakdown (expenses only) ----
   output$category_chart <- renderPlotly({
-    by_cat <- ledger_in_range() %>%
-      filter(entry_type == "transaction", flow == "expense") %>%
-      group_by(category_name) %>%
-      summarise(total = sum(abs(signed_amount)), .groups = "drop") %>%
+    by_cat <- ledger_in_range() |>
+      filter(entry_type == "transaction", flow == "expense") |>
+      group_by(category_name) |>
+      summarise(total = sum(abs(signed_amount)), .groups = "drop") |>
       arrange(desc(total))
 
     plot_ly(
@@ -324,13 +324,13 @@ server <- function(input, output, session) {
         ))
       ),
       textinfo = "label+percent"
-    ) %>%
+    ) |>
       layout(showlegend = FALSE)
   })
 
   ## ---- General ledger table ----
   output$ledger_table <- renderDT({
-    ledger_in_range() %>%
+    ledger_in_range() |>
       select(
         entry_date,
         entry_type,
@@ -342,24 +342,24 @@ server <- function(input, output, session) {
         description,
         entered_by_name,
         is_voided
-      ) %>%
-      arrange(desc(entry_date)) %>%
+      ) |>
+      arrange(desc(entry_date)) |>
       datatable(
         filter = "top",
         options = list(pageLength = 20),
         rownames = FALSE
-      ) %>%
+      ) |>
       formatCurrency("signed_amount", currency = "KES ")
   })
 
   ## ---- Funds tab ----
   output$fund_chart <- renderPlotly({
-    fd <- raw()$funds %>%
+    fd <- raw()$funds |>
       filter(
         transaction_date >= input$date_range[1],
         transaction_date <= input$date_range[2]
-      ) %>%
-      group_by(fund, category_type) %>%
+      ) |>
+      group_by(fund, category_type) |>
       summarise(total = sum(amount), .groups = "drop")
 
     p <- ggplot2::ggplot(
@@ -382,13 +382,13 @@ server <- function(input, output, session) {
 
   ## ---- Monthly assessment received, by church ----
   output$assessment_chart <- renderPlotly({
-    church_assessment <- ledger_in_range() %>%
+    church_assessment <- ledger_in_range() |>
       filter(
         entry_type == "transaction",
         category_name == "Assessment Received"
-      ) %>%
-      mutate(month = floor_date(entry_date, "month")) %>%
-      group_by(month, church_name) %>%
+      ) |>
+      mutate(month = floor_date(entry_date, "month")) |>
+      group_by(month, church_name) |>
       summarise(total = sum(signed_amount), .groups = "drop")
 
     # Generate one color per church from your brand palette so this
@@ -420,9 +420,9 @@ server <- function(input, output, session) {
 
   output$restricted_funds_table <- renderTable(
     {
-      raw()$funds %>%
-        filter(is_restricted) %>%
-        group_by(fund) %>%
+      raw()$funds |>
+        filter(is_restricted) |>
+        group_by(fund) |>
         summarise(
           income = sum(amount[category_type == "income"]),
           expense = sum(amount[category_type == "expense"]),
