@@ -471,13 +471,12 @@ def generate_church_report(df, start_str, end_str, targets_df, db_engine):
     total_opening = opening_bank + opening_cash
     
     # --- 3. Filtering for Current Period ---
-    # We no longer need to worry about excluding "Opening" types, because they don't exist in the ledger anymore!
     current_period_mask = (df['date'] >= start_date) & (df['date'] <= end_date)
     report_data = df.loc[current_period_mask].copy()
     
     # 4. STRATIFIED CLOSING BALANCES (Balance C/F)
     # Calculate how each account changed specifically in this window
-    bank_change = report_data[report_data['account'] == 'Bank']['correct_amount'].sum()
+    bank_change = report_data[report_data['account'].str.contains('bank', case=False)]['correct_amount'].sum()
     cash_change = report_data[report_data['account'].str.contains('cash|m-pesa', case=False)]['correct_amount'].sum()
     
     closing_bank = opening_bank + bank_change
@@ -564,7 +563,7 @@ def generate_church_report(df, start_str, end_str, targets_df, db_engine):
         'minister_stipend_text': minister_stipend_text,
         'report_gen_date': datetime.now().strftime('%d/%m/%Y')
     }
-
+    breakpoint()
     # Build the PDF and move it to output/pdf/
     render_latex_template(data_to_pass, file_base_name)
 

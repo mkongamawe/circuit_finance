@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir jinja2 sqlalchemy psycopg2-binary
 WORKDIR /app
 
 # Copy the builder script
-COPY scripts/python/latex_builder.py /app/latex_builder.py
+COPY src/python/latex_builder.py /app/latex_builder.py
 
 # Copy the LaTeX template and the logos so pdflatex has access to them
 COPY templates/ /app/templates/

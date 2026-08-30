@@ -22,12 +22,10 @@ DB_HOST <- Sys.getenv("CIRCUIT_DB_HOST", "localhost")
 DB_PORT <- as.integer(Sys.getenv("CIRCUIT_DB_PORT", "5432"))
 DB_NAME <- Sys.getenv("CIRCUIT_DB_NAME", "church_finance_dev")
 DB_USER <- Sys.getenv("CIRCUIT_DB_USER", "shiny_reader")
-DB_PASS <- Sys.getenv("CIRCUIT_DB_PASS", "")
 DB_PASS <- Sys.getenv("CIRCUIT_DB_PASS")
 if (DB_PASS == "") {
   stop("CIRCUIT_DB_PASS is not set — check .env / env_file configuration.")
 }
-
 
 ## ---- THEME (fresh) ---------------------------------------------------
 my_theme <- create_theme(
@@ -144,11 +142,11 @@ ui <- dashboardPage(
             height = "480px",
             tabPanel(
               "Monthly Income Vs Expense",
-              plotlyOutput("monthly_chart", height = "600px")
+              plotlyOutput("monthly_chart", height = "480px")
             ),
             tabPanel(
               "Expenses by Category",
-              plotlyOutput("category_chart", height = "600px")
+              plotlyOutput("category_chart", height = "480px")
             )
           )
         )
