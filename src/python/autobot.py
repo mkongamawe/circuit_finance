@@ -86,7 +86,7 @@ if __name__ == "__main__":
     today = datetime.now()
     action, tasks = get_dispatch_plan(today)
     
-    COMMITTEE = "clement.mwagwabi@outlook.com" #"robert.mwagwabi@live.com,emmasididi@gmail.com"
+    COMMITTEE = "robert.mwagwabi@live.com,emmasididi@gmail.com"
     BISHOP_CC = "clement.mwagwabi@outlook.com"
 
     if action == "monthly_csv":
