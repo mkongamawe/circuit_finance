@@ -1,17 +1,17 @@
 services:
   circuit-dashboard:
     build:
-      context: .
-      dockerfile: Dockerfile.r-shiny
+      context: ../..
+      dockerfile: src/docker/Dockerfile.r-shiny
     container_name: circuit-dashboard
     restart: unless-stopped
     ports:
       - "3838:3838"
     volumes:
-      - ./app:/srv/shiny-server/circuit-dashboard
-      - ./logs:/var/log/shiny-server
+      - ../../src/r/app:/srv/shiny-server/circuit-dashboard
+      - ../../logs/app_logs:/var/log/shiny-server
     env_file:
-      - .env
+      - ../../.env
     environment:
       CIRCUIT_DB_HOST: host.docker.internal   # or your server's LAN/Tailscale IP
       CIRCUIT_DB_PORT: "5432"

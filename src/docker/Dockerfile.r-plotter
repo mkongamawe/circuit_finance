@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Copy the plotting script
-COPY scripts/r/plotter.R /app/plotter.R
+COPY src/r/plotter.R /app/plotter.R
 
 # Run the script, accepting arguments
 ENTRYPOINT ["Rscript", "/app/plotter.R"]

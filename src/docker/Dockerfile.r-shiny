@@ -22,17 +22,16 @@ RUN install2.r --error --skipinstalled --ncpus -1 \
     && rm -rf /tmp/downloaded_packages
 
 
-COPY scripts/bash/write-renviron.sh /usr/local/bin/write-renviron.sh
-RUN chmod +x /usr/local/bin/write-renviron.sh
 
-COPY scripts/bash/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
 # Shiny Server serves any folder under /srv/shiny-server/ as an app
 # at http://<host>:3838/<folder-name>/
-COPY app/app.R /srv/shiny-server/circuit-dashboard/app.R
+COPY src/r/app/app.R /srv/shiny-server/circuit-dashboard/app.R
+COPY src/bash/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+WORKDIR /srv//shiny-server/circuit-dashboard
  
 EXPOSE 3838
  
 # This is already the default CMD in rocker/shiny, but explicit is nice:
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["/usr/bin/shiny-server"]
