@@ -9,7 +9,6 @@ import pandas as pd
 from sqlalchemy import create_engine, text
 
 
-# --- Load the tex templat ---
 # --- Compare Assessment Income performance ---
 def save_assessment_income_bars(df, start_date, end_date):
     # 1. Determine how many months are in the period
@@ -210,6 +209,7 @@ def save_assessment_church_target_bars(df, start_date, end_date, targets_df):
          return "Regarding assessment income, no targets matched the received contributions."
 
     return "Regarding assessment income, " + " and ".join(performance_msgs) + "."
+
 # --- Assessment expenditure performance ---
 def save_assessment_expenditure_bars(df, start_date, end_date, targets_df):
     # 1. Determine period length and grouping logic
@@ -457,7 +457,13 @@ def generate_church_report(df, start_str, end_str, targets_df, db_engine):
 if __name__ == "__main__":
     try:
         # 1. Connect to Postgres
-        engine = create_engine("postgresql://cozmopol:gre8t_ser7er%21@localhost:5432/circuit_finance_dev")
+        POSTGRES_USER = os.getenv("POSTGRES_USER")
+        POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+        POSTGRES_DB = os.getenv("POSTGRES_DB")
+
+        engine = create_engine(
+            f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:5432/{POSTGRES_DB}"
+        )
         
         # 2. Query the General Ledger View and map it to your old DataFrame format
         ledger_query = """
