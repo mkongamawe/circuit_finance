@@ -20,7 +20,12 @@ mkdir -p "$PIPELINE_DIR/output/pdf" "$PIPELINE_DIR/output/csv" "$PIPELINE_DIR/lo
 # 2. Run Phase 1: Python Ledger
 echo ">>> Running python-ledger..."
 docker build -t python-ledger -f src/docker/Dockerfile.python-ledger .
-docker run --rm --network host -v "$PIPELINE_DIR:/data" python-ledger "$START_DATE" "$END_DATE"
+docker run --rm --network host \
+  -v "$PIPELINE_DIR:/data" \
+  -e POSTGRES_USER \
+  -e POSTGRES_PASSWORD \
+  -e POSTGRES_DB \
+  python-ledger "$START_DATE" "$END_DATE"
 
 # 3. Run Phase 2: R Plotter
 echo ">>> Running r-plotter..."

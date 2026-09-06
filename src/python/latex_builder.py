@@ -60,8 +60,13 @@ def build_pdf(start_str, end_str):
     print(f"✅ Success: PDF generated at /data/output/{file_base_name}.pdf")
 
     # 5. Log the report run to the Database
-    DB_URI = "postgresql://cozmopol:gre8t_ser7er%21@localhost:5432/circuit_finance_dev"
-    engine = create_engine(DB_URI)
+    POSTGRES_USER = os.getenv("POSTGRES_USER")
+    POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+    POSTGRES_DB = os.getenv("POSTGRES_DB")
+
+    engine = create_engine(
+        f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:5432/{POSTGRES_DB}"
+    )
     
     pdf_dest_path = f"output/pdf/{file_base_name}.pdf" 
     

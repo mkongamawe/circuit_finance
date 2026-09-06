@@ -7,7 +7,14 @@ from send_report import send_church_report
 from sqlalchemy import create_engine
 
 # --- DATABASE CONFIGURATION ---
-DB_URI = "postgresql://cozmopol:gre8t_ser7er%21@localhost:5432/circuit_finance_dev"
+# 1. Connect to Postgres
+POSTGRES_USER = os.getenv("POSTGRES_USER")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+POSTGRES_DB = os.getenv("POSTGRES_DB")
+
+engine = create_engine(
+    f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:5432/{POSTGRES_DB}"
+)
 
 def first_monday_of_month(d):
     """The first Monday of d's month."""
@@ -62,12 +69,11 @@ def get_dispatch_plan(today):
 
 def generate_monthly_csv(start_date, end_date):
     """Pulls the ledger for the previous month and saves it as a CSV."""
-    engine = create_engine(DB_URI)
+    
     query = f"""
         SELECT entry_date, account_name, category_name, description, signed_amount 
         FROM general_ledger 
         WHERE entry_date >= '{start_date}' AND entry_date <= '{end_date}'
-        AND NOT is_voided
         ORDER BY entry_date ASC;
     """
     df = pd.read_sql(query, engine)
@@ -82,11 +88,11 @@ def generate_monthly_csv(start_date, end_date):
 
 if __name__ == "__main__":
     # [x]: Check here to manually change the script date. For testing purposes.
-    # today = datetime(2026, 7, 6)
-    today = datetime.now()
+    today = datetime(2026, 7, 8)
+    # today = datetime.now()
     action, tasks = get_dispatch_plan(today)
     
-    COMMITTEE = "robert.mwagwabi@live.com,emmasididi@gmail.com"
+    COMMITTEE = "clement.mwagwabi@outlook.com" #"robert.mwagwabi@live.com,emmasididi@gmail.com"
     BISHOP_CC = "clement.mwagwabi@outlook.com"
 
     if action == "monthly_csv":

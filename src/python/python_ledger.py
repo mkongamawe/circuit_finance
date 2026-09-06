@@ -481,7 +481,6 @@ if __name__ == "__main__":
             JOIN categories c ON c.id = t.category_id
             LEFT JOIN churches ch ON ch.id = t.church_id
             LEFT JOIN ministers m ON m.id = t.minister_id
-            WHERE NOT t.is_voided
 
             UNION ALL
 
@@ -496,7 +495,6 @@ if __name__ == "__main__":
                 -tr.amount AS correct_amount
             FROM transfers tr
             JOIN accounts a_from ON a_from.id = tr.from_account_id
-            WHERE NOT tr.is_voided
 
             UNION ALL
 
@@ -511,7 +509,6 @@ if __name__ == "__main__":
                 tr.amount AS correct_amount
             FROM transfers tr
             JOIN accounts a_to ON a_to.id = tr.to_account_id
-            WHERE NOT tr.is_voided
         """
         ledger_df = pd.read_sql(ledger_query, engine)
         ledger_df['date'] = pd.to_datetime(ledger_df['date'])
