@@ -35,7 +35,12 @@ docker run --rm -v "$PIPELINE_DIR:/data" r-plotter "$START_DATE" "$END_DATE"
 # 4. Run Phase 3: LaTeX Builder (dumps everything into /data/output temporarily)
 echo ">>> Running latex-builder..."
 docker build -t latex-builder -f src/docker/Dockerfile.latex-builder .
-docker run --rm --network host -v "$PIPELINE_DIR:/data" latex-builder "$START_DATE" "$END_DATE"
+docker run --rm --network host \
+  -v "$PIPELINE_DIR:/data" \
+  -e POSTGRES_USER \
+  -e POSTGRES_PASSWORD \
+  -e POSTGRES_DB \
+  latex-builder "$START_DATE" "$END_DATE"
 
 # 5. The Cleanup Crew: Sort the files into their proper folders
 echo ">>> Organizing files..."
